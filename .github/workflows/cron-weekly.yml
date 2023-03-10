@@ -68,6 +68,6 @@ jobs:
           name: share-artifact
           path: gh-pages
       - name: Display structure of downloaded files
-        working-directory: gh-pages
+        # working-directory: gh-pages
         run: |
           ls -R
