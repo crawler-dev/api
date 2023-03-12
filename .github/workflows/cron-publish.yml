@@ -1,0 +1,82 @@
+name: cron-publish
+
+#
+# [Events that trigger workflows](https://docs.github.com/zh/actions/using-workflows/events-that-trigger-workflows#workflow_run)
+#
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+# │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+# │ │ │ │ │
+# │ │ │ │ │
+# │ │ │ │ │
+# * * * * *
+# 
+# 运算符	说明	示例
+# *	任何值	15 * * * * 在每天每小时的每个第 15 分钟运行。
+# ,	值列表分隔符	2,10 4,5 * * * 在每天第 4 和第 5 小时的第 2 和第 10 分钟运行。
+# -	值的范围	30 4-6 * * * 在第 4、5 和 6 小时的第 30 分钟运行。
+# /	步骤值	20/15 * * * * 在第 20 分钟到第 59 分钟每隔 15 分钟运行一次（第 20、35 和 50 分钟）。
+#
+# UTC 时间
+# 
+# 北京时间 UTC +8
+# 
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '* 2 * * *' # 每天早上2点
+
+# # https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+# # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idpermissions
+# # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+# # https://docs.github.com/en/actions/learn-github-actions/contexts
+# permissions:
+#   actions: read|write|none
+#   checks: read|write|none
+#   contents: read|write|none
+#   deployments: read|write|none
+#   id-token: read|write|none
+#   issues: read|write|none
+#   discussions: read|write|none
+#   packages: read|write|none
+#   pages: read|write|none
+#   pull-requests: read|write|none
+#   repository-projects: read|write|none
+#   security-events: read|write|none
+#   statuses: read|write|none
+
+jobs:
+  deploy:
+    name: Deploy on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    permissions:
+      contents: write
+    needs: generate
+    concurrency:
+      group: ${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Checkout Github Pages
+        uses: actions/checkout@v3
+        with:
+          repository: crawler-dev/github-cli
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: gh-pages
+          path: github-cli-gh-pages
+      - name: Compose
+        run: |
+          mkdir -p gh-pages
+          cp -r github-cli-gh-pages/* gh-pages
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: gh-pages
+          branch: gh-pages
