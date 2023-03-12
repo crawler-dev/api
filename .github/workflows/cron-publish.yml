@@ -50,7 +50,7 @@ on:
 
 jobs:
   compose:
-    name: Deploy on ${{ matrix.os }}
+    name: Compose on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
