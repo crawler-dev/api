@@ -49,22 +49,15 @@ on:
 #   statuses: read|write|none
 
 jobs:
-  deploy:
+  compose:
     name: Deploy on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-    permissions:
-      contents: write
-    needs: generate
-    concurrency:
-      group: ${{ github.ref }}
-      cancel-in-progress: true
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Checkout Github Pages
+      - name: Checkout Github-CLI Github Pages
+        continue-on-error: true # 忽略 gh-pages 分支未创建
         uses: actions/checkout@v3
         with:
           repository: crawler-dev/github-cli
@@ -74,9 +67,60 @@ jobs:
       - name: Compose
         run: |
           mkdir -p gh-pages
-          cp -r github-cli-gh-pages/* gh-pages
-      - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4
+          [ -d github-cli-gh-pages ] && cp -r github-cli-gh-pages/ gh-pages
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          folder: gh-pages
-          branch: gh-pages
+          path: gh-pages
+
+  deploy:
+    name: Deploy on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: compose
+    concurrency:
+      group: ${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
+
+  # deploy:
+  #   name: Deploy on ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest]
+  #   permissions:
+  #     contents: write
+  #   concurrency:
+  #     group: ${{ github.ref }}
+  #     cancel-in-progress: true
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Checkout Github-CLI Github Pages
+  #       continue-on-error: true # 忽略 gh-pages 分支未创建
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: crawler-dev/github-cli
+  #         token: ${{ secrets.GH_ACCESS_TOKEN }}
+  #         ref: gh-pages
+  #         path: github-cli-gh-pages
+  #     - name: Compose
+  #       run: |
+  #         mkdir -p gh-pages
+  #         [ -d github-cli-gh-pages ] && cp -r github-cli-gh-pages/ gh-pages
+  #     - name: Deploy
+  #       uses: JamesIves/github-pages-deploy-action@v4
+  #       with:
+  #         folder: gh-pages
+  #         branch: gh-pages
