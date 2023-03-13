@@ -67,7 +67,7 @@ jobs:
       - name: Compose
         run: |
           mkdir -p gh-pages
-          [ -d github-cli-gh-pages ] && cp -r github-cli-gh-pages/ gh-pages
+          [ -d github-cli-gh-pages ] && cp -r github-cli-gh-pages/. gh-pages/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
