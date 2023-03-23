@@ -56,18 +56,18 @@ jobs:
       matrix:
         os: [ubuntu-latest]
     steps:
-      - name: Checkout Github-CLI Github Pages
+      - name: Checkout Github-Api Github Pages
         continue-on-error: true # 忽略 gh-pages 分支未创建
         uses: actions/checkout@v3
         with:
-          repository: crawler-dev/github-cli
+          repository: crawler-dev/github-api
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           ref: gh-pages
-          path: github-cli-gh-pages
+          path: github-api-gh-pages
       - name: Compose
         run: |
           mkdir -p gh-pages
-          [ -d github-cli-gh-pages ] && cp -r github-cli-gh-pages/. gh-pages/
+          [ -d github-api-gh-pages ] && cp -r github-api-gh-pages/. gh-pages/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
@@ -108,18 +108,18 @@ jobs:
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v3
-  #     - name: Checkout Github-CLI Github Pages
+  #     - name: Checkout Github-Api Github Pages
   #       continue-on-error: true # 忽略 gh-pages 分支未创建
   #       uses: actions/checkout@v3
   #       with:
-  #         repository: crawler-dev/github-cli
+  #         repository: crawler-dev/github-api
   #         token: ${{ secrets.GH_ACCESS_TOKEN }}
   #         ref: gh-pages
-  #         path: github-cli-gh-pages
+  #         path: github-api-gh-pages
   #     - name: Compose
   #       run: |
   #         mkdir -p gh-pages
-  #         [ -d github-cli-gh-pages ] && cp -r github-cli-gh-pages/ gh-pages
+  #         [ -d github-api-gh-pages ] && cp -r github-api-gh-pages/ gh-pages
   #     - name: Deploy
   #       uses: JamesIves/github-pages-deploy-action@v4
   #       with:
